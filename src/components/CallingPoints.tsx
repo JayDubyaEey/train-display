@@ -11,14 +11,18 @@ interface CallingPointsProps {
 export function CallingPoints({ trains, token }: CallingPointsProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [cycle, setCycle] = useState(0)
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const activeTrain = trains[activeIndex]
   if (!activeTrain) return null
 
+  // Called when a scroll finishes — wait the pause, then advance to next cycle
   function handleScrollEnd() {
-    const nextIndex = (activeIndex + 1) % trains.length
-    setActiveIndex(nextIndex)
-    setCycle((c) => c + 1)
+    pauseTimerRef.current = setTimeout(() => {
+      const nextIndex = (activeIndex + 1) % trains.length
+      setActiveIndex(nextIndex)
+      setCycle((c) => c + 1)
+    }, CALLING_POINTS_PAUSE_MS)
   }
 
   return (
@@ -43,16 +47,14 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
   const { callingPoints, loading } = useServiceDetails(train.serviceIdUrlSafe, token, true)
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLParagraphElement>(null)
-  const [scrolling, setScrolling] = useState(false)
-  const [animDurationMs, setAnimDurationMs] = useState(0)
-  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [animDurationMs, setAnimDurationMs] = useState<number | null>(null)
 
   const destination =
     train.currentDestinations?.[0]?.locationName ?? train.destination?.[0]?.locationName ?? ""
 
   const prefix = showLabel ? `${train.std} ${destination} — ` : ""
 
-  // Compute animation duration and kick off after the pause
+  // Once text is rendered and measured, kick off the scroll immediately
   useEffect(() => {
     if (loading) return
     if (!containerRef.current || !textRef.current) return
@@ -63,14 +65,6 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
     const durationMs = (totalPx / CALLING_POINTS_SPEED_PX_PER_S) * 1000
 
     setAnimDurationMs(durationMs)
-
-    pauseTimerRef.current = setTimeout(() => {
-      setScrolling(true)
-    }, CALLING_POINTS_PAUSE_MS)
-
-    return () => {
-      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
-    }
   }, [loading])
 
   // Build stop segments — all stops except last are plain, last is bold + uppercase
@@ -110,18 +104,18 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
     </>
   )
 
+  // Hidden until the duration is computed (text is measured), then scroll starts
+  const style: React.CSSProperties =
+    animDurationMs != null
+      ? { animation: `marquee ${animDurationMs}ms linear forwards` }
+      : { visibility: "hidden" }
+
   return (
     <div ref={containerRef} className="overflow-hidden h-7">
       <p
         ref={textRef}
         className="font-mono text-amber-400 text-xl tracking-wide led-glow whitespace-nowrap"
-        style={
-          scrolling
-            ? ({
-                animation: `marquee ${animDurationMs}ms linear forwards`,
-              } as React.CSSProperties)
-            : { visibility: "hidden" }
-        }
+        style={style}
         onAnimationEnd={onScrollEnd}
       >
         {prefix}
