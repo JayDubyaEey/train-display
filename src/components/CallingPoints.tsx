@@ -91,14 +91,21 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
           )
         })
 
+  const carriageText =
+    train.length != null ? `. This train is formed of ${train.length} carriages` : ""
+
   const content = loading ? (
     "Loading calling points..."
   ) : callingPoints.length === 0 ? (
     <>
       Terminates at <span className="font-bold">{destination.toUpperCase()}</span>
+      {carriageText}
     </>
   ) : (
-    <>Calling at: {stopSegments}</>
+    <>
+      Calling at: {stopSegments}
+      {carriageText}
+    </>
   )
 
   return (
