@@ -5,6 +5,7 @@ import { CallingPoints } from "./CallingPoints"
 import { InfoTicker } from "./InfoTicker"
 import type { DisplayConfig } from "@/lib/types"
 import { useDepartures } from "@/hooks/useDepartures"
+import { useTime } from "@/hooks/useTime"
 
 interface PlatformDisplayProps {
   config: DisplayConfig
@@ -19,6 +20,7 @@ function stripHtml(html: string): string {
 }
 
 export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps) {
+  const now = useTime()
   const { boardInfo, trains, loading, error, refetch } = useDepartures(
     config.stationCrs,
     config.token,
@@ -86,7 +88,7 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
 
           {trains[0] && (
             <div className="space-y-2">
-              <TrainRow train={trains[0]} variant="primary" />
+              <TrainRow train={trains[0]} variant="primary" now={now} />
               <CallingPoints trains={[trains[0]]} token={config.token} />
             </div>
           )}
@@ -94,7 +96,7 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
           {trains.length > 1 && (
             <div className="border-t border-amber-900/20 pt-3 space-y-1">
               {trains.slice(1).map((t) => (
-                <TrainRow key={t.serviceID} train={t} variant="secondary" />
+                <TrainRow key={t.serviceID} train={t} variant="secondary" now={now} />
               ))}
             </div>
           )}
