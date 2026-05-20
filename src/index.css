@@ -23,19 +23,35 @@
   animation: marquee var(--marquee-duration, 15s) linear forwards;
 }
 
-/* ── Ticker animation for info bar ──────────────────────────────────────── */
-@keyframes ticker {
-  0% {
-    transform: translateX(110%);
+/* ── Secondary train push-up transition ─────────────────────────────────── */
+@keyframes slide-in-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
   }
-  100% {
-    transform: translateX(-110%);
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
-.animate-ticker {
-  display: inline-block;
-  animation: ticker 22s linear forwards;
+@keyframes slide-out-up {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 2s ease-in-out forwards;
+}
+
+.animate-slide-out-up {
+  animation: slide-out-up 2s ease-in-out forwards;
 }
 
 /* ── Global reset ────────────────────────────────────────────────────────── */
