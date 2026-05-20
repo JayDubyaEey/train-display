@@ -10,19 +10,20 @@ interface CallingPointsProps {
 
 export function CallingPoints({ trains, token }: CallingPointsProps) {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [cycle, setCycle] = useState(0)
 
   const activeTrain = trains[activeIndex]
   if (!activeTrain) return null
 
   function handleAnimationEnd() {
-    if (trains.length > 1) {
-      setActiveIndex((i) => (i + 1) % trains.length)
-    }
+    const nextIndex = (activeIndex + 1) % trains.length
+    setActiveIndex(nextIndex)
+    setCycle((c) => c + 1)
   }
 
   return (
     <CallingPointsForTrain
-      key={`${activeTrain.serviceID}-${activeIndex}`}
+      key={cycle}
       train={activeTrain}
       token={token}
       showLabel={trains.length > 1}
