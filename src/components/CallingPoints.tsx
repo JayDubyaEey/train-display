@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useServiceDetails } from "@/hooks/useServiceDetails"
-import { CALLING_POINTS_CYCLE_MS } from "@/lib/constants"
+import { CALLING_POINTS_SCROLL_MS } from "@/lib/constants"
 import type { DepartureService } from "@/lib/types"
 
 interface CallingPointsProps {
@@ -8,35 +8,26 @@ interface CallingPointsProps {
   token: string
 }
 
-/**
- * Fetches calling points for each train and cycles through them.
- * Displays "Calling at: Stop A, Stop B, Stop C"
- */
 export function CallingPoints({ trains, token }: CallingPointsProps) {
   const [activeIndex, setActiveIndex] = useState(0)
 
-  // Cycle between trains
-  useEffect(() => {
-    if (trains.length <= 1) {
-      setActiveIndex(0)
-      return
-    }
-    const id = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % trains.length)
-    }, CALLING_POINTS_CYCLE_MS)
-    return () => clearInterval(id)
-  }, [trains.length])
-
   const activeTrain = trains[activeIndex]
-
   if (!activeTrain) return null
+
+  function handleAnimationEnd() {
+    if (trains.length > 1) {
+      setActiveIndex((i) => (i + 1) % trains.length)
+    }
+  }
 
   return (
     <CallingPointsForTrain
-      key={activeTrain.serviceID}
+      key={`${activeTrain.serviceID}-${activeIndex}`}
       train={activeTrain}
       token={token}
       showLabel={trains.length > 1}
+      scrollDurationMs={CALLING_POINTS_SCROLL_MS}
+      onScrollEnd={handleAnimationEnd}
     />
   )
 }
@@ -45,9 +36,17 @@ interface SingleProps {
   train: DepartureService
   token: string
   showLabel: boolean
+  scrollDurationMs: number
+  onScrollEnd: () => void
 }
 
-function CallingPointsForTrain({ train, token, showLabel }: SingleProps) {
+function CallingPointsForTrain({
+  train,
+  token,
+  showLabel,
+  scrollDurationMs,
+  onScrollEnd,
+}: SingleProps) {
   const { callingPoints, loading } = useServiceDetails(train.serviceIdUrlSafe, token, true)
 
   const destination =
@@ -64,9 +63,9 @@ function CallingPointsForTrain({ train, token, showLabel }: SingleProps) {
   return (
     <div className="overflow-hidden">
       <p
-        className="font-mono text-amber-300 text-sm tracking-wide led-glow whitespace-nowrap
-                   animate-marquee"
-        style={{ "--marquee-text": JSON.stringify(prefix + text) } as React.CSSProperties}
+        className="font-mono text-amber-300 text-sm tracking-wide led-glow whitespace-nowrap animate-marquee"
+        style={{ "--marquee-duration": `${scrollDurationMs}ms` } as React.CSSProperties}
+        onAnimationEnd={onScrollEnd}
       >
         {prefix}
         {text}

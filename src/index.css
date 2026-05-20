@@ -9,10 +9,6 @@
 }
 
 /* ── Marquee animation for calling points ────────────────────────────────── */
-/*
-  The calling-points text scrolls from right to left at a steady pace.
-  Duration is intentionally long so even a full set of stops reads comfortably.
-*/
 @keyframes marquee {
   0% {
     transform: translateX(100%);
@@ -24,7 +20,7 @@
 
 .animate-marquee {
   display: inline-block;
-  animation: marquee 25s linear forwards;
+  animation: marquee var(--marquee-duration, 15s) linear forwards;
 }
 
 /* ── Ticker animation for info bar ──────────────────────────────────────── */
