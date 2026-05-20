@@ -13,13 +13,22 @@ interface PlatformDisplayProps {
   onOpenSettings: () => void
 }
 
+/** Blank row that holds the same height as a TrainRow */
+function EmptyRow() {
+  return <div className="h-7 font-mono text-amber-400/20 text-xl led-glow">——</div>
+}
+
+/** Blank row that holds the same height as the CallingPoints row */
+function EmptyCallingPoints() {
+  return <div className="h-7" />
+}
+
 export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps) {
   const now = useTime()
   const {
     boardInfo,
     trains: rawTrains,
     loading,
-    error,
     refetch,
   } = useDepartures(config.stationCrs, config.token, config.platform, true)
 
@@ -64,35 +73,23 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
           </div>
         </div>
 
-        {/* ── Main board area ── */}
+        {/* ── Main board area — always 3 rows ── */}
         <div className="px-4 pt-4 pb-3 space-y-3">
-          {error && (
-            <div className="font-mono text-red-500 text-sm tracking-wide">Error: {error}</div>
+          {/* Row 1: first train */}
+          {primaryTrain ? <TrainRow train={primaryTrain} now={now} /> : <EmptyRow />}
+
+          {/* Row 2: calling points */}
+          {primaryTrain ? (
+            <CallingPoints trains={[primaryTrain]} token={config.token} />
+          ) : (
+            <EmptyCallingPoints />
           )}
 
-          {!error && trains.length === 0 && !loading && (
-            <div className="font-mono text-amber-600/60 text-sm tracking-widest py-6 text-center">
-              {config.platform
-                ? `No departures from Platform ${config.platform}`
-                : "No departures available"}
-            </div>
-          )}
-
-          {/* First train + calling points */}
-          {primaryTrain && (
-            <div>
-              <TrainRow train={primaryTrain} now={now} />
-              <div className="mt-1.5">
-                <CallingPoints trains={[primaryTrain]} token={config.token} />
-              </div>
-            </div>
-          )}
-
-          {/* Secondary trains — cycles between 2nd and 3rd with fade */}
-          {secondaryTrains.length > 0 && (
-            <div className="pt-1">
-              <SecondaryTrains trains={secondaryTrains} now={now} />
-            </div>
+          {/* Row 3: secondary train(s) */}
+          {secondaryTrains.length > 0 ? (
+            <SecondaryTrains trains={secondaryTrains} now={now} />
+          ) : (
+            <EmptyRow />
           )}
         </div>
 
