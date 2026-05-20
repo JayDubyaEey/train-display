@@ -2,7 +2,6 @@ import { Settings, RefreshCw } from "lucide-react"
 import { ClockDisplay } from "./ClockDisplay"
 import { TrainRow } from "./TrainRow"
 import { CallingPoints } from "./CallingPoints"
-import { InfoTicker } from "./InfoTicker"
 import type { DisplayConfig } from "@/lib/types"
 import { useDepartures } from "@/hooks/useDepartures"
 import { useTime } from "@/hooks/useTime"
@@ -10,13 +9,6 @@ import { useTime } from "@/hooks/useTime"
 interface PlatformDisplayProps {
   config: DisplayConfig
   onOpenSettings: () => void
-}
-
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
 }
 
 export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps) {
@@ -30,11 +22,6 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
 
   const stationLabel = boardInfo?.locationName ?? config.stationName
   const platformLabel = config.platform ? `Platform ${config.platform}` : "All Platforms"
-
-  // Extract NRCC messages (strip HTML tags National Rail includes)
-  const nrccMessages = (boardInfo?.nrccMessages ?? []).map((m) => stripHtml(m.value))
-
-  const defaultTickerMsg = `${stationLabel} — ${platformLabel} — Information correct at time of display`
 
   return (
     <div className="min-h-screen bg-black flex flex-col justify-center items-center p-4">
@@ -101,9 +88,6 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
             </div>
           )}
         </div>
-
-        {/* ── Info ticker ── */}
-        <InfoTicker messages={nrccMessages} staticMessage={defaultTickerMsg} />
       </div>
     </div>
   )
