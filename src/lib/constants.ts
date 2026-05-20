@@ -7,7 +7,7 @@ export const REFRESH_INTERVAL_MS = 30_000
 export const CALLING_POINTS_SPEED_PX_PER_S = 80
 
 /** Minimum pause between scroll cycles (ms) — text starts scrolling after this delay */
-export const CALLING_POINTS_PAUSE_MS = 30_000
+export const CALLING_POINTS_PAUSE_MS = 20_000
 
 /** Number of trains to fetch for the platform board (1 primary + up to 2 cycling secondary) */
 export const TRAINS_SHOWN = 3
