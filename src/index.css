@@ -9,6 +9,7 @@
 }
 
 /* ── Marquee animation for calling points ────────────────────────────────── */
+/* Duration is set dynamically via inline style based on measured text width  */
 @keyframes marquee {
   0% {
     transform: translateX(100%);
@@ -16,11 +17,6 @@
   100% {
     transform: translateX(-100%);
   }
-}
-
-.animate-marquee {
-  display: inline-block;
-  animation: marquee var(--marquee-duration, 15s) linear forwards;
 }
 
 /* ── Secondary train push-up transition ─────────────────────────────────── */
