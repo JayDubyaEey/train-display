@@ -79,7 +79,7 @@ export function TrainRow({ train, variant, now }: TrainRowProps) {
     <div
       className={cn(
         "flex items-baseline gap-3 font-mono led-glow",
-        isPrimary ? "text-amber-400 text-3xl" : "text-amber-400 text-lg opacity-70"
+        isPrimary ? "text-amber-400 text-xl" : "text-amber-400 text-xl"
       )}
     >
       {/* Scheduled time */}
@@ -88,9 +88,7 @@ export function TrainRow({ train, variant, now }: TrainRowProps) {
       {/* Destination */}
       <span className="flex-1 truncate tracking-wider font-bold">
         {destination}
-        {via && (
-          <span className={cn("font-normal ml-2", isPrimary ? "text-xl" : "text-base")}>{via}</span>
-        )}
+        {via && <span className={cn("font-normal ml-2 text-base")}>{via}</span>}
       </span>
 
       {/* Status */}
