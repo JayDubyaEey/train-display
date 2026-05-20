@@ -93,13 +93,6 @@ export function TrainRow({ train, variant, now }: TrainRowProps) {
         )}
       </span>
 
-      {/* Platform */}
-      {train.platform && (
-        <span className="shrink-0 tracking-wider">
-          Plat <span className="font-bold">{train.platform}</span>
-        </span>
-      )}
-
       {/* Status */}
       <span className={cn("shrink-0 tracking-wider font-bold tabular-nums", statusColour)}>
         {statusText}
