@@ -81,7 +81,7 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
           {/* First train + calling points */}
           {primaryTrain && (
             <div>
-              <TrainRow train={primaryTrain} variant="primary" now={now} />
+              <TrainRow train={primaryTrain} now={now} />
               <div className="mt-1.5">
                 <CallingPoints trains={[primaryTrain]} token={config.token} />
               </div>

@@ -102,10 +102,10 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
   )
 
   return (
-    <div ref={containerRef} className="overflow-hidden h-5">
+    <div ref={containerRef} className="overflow-hidden h-7">
       <p
         ref={textRef}
-        className="font-mono text-amber-300 text-sm tracking-wide led-glow whitespace-nowrap"
+        className="font-mono text-amber-400 text-xl tracking-wide led-glow whitespace-nowrap"
         style={
           scrolling
             ? ({

@@ -3,7 +3,6 @@ import { cn, parseHHMM } from "@/lib/utils"
 
 interface TrainRowProps {
   train: DepartureService
-  variant: "primary" | "secondary"
   now: Date
   /** Optional ordinal label shown before the time, e.g. "2nd" or "3rd" */
   ordinalPrefix?: string
@@ -44,7 +43,7 @@ function getStatus(train: DepartureService, now: Date): StatusResult {
   }
 }
 
-export function TrainRow({ train, variant, now, ordinalPrefix }: TrainRowProps) {
+export function TrainRow({ train, now, ordinalPrefix }: TrainRowProps) {
   const destination =
     train.currentDestinations?.[0]?.locationName ??
     train.destination?.[0]?.locationName ??
@@ -54,15 +53,8 @@ export function TrainRow({ train, variant, now, ordinalPrefix }: TrainRowProps) 
 
   const { text: statusText, colour: statusColour } = getStatus(train, now)
 
-  const isPrimary = variant === "primary"
-
   return (
-    <div
-      className={cn(
-        "flex items-baseline gap-3 font-mono led-glow text-amber-400 text-xl",
-        !isPrimary && "opacity-80"
-      )}
-    >
+    <div className="flex items-baseline gap-3 font-mono led-glow text-amber-400 text-xl">
       {/* Ordinal prefix e.g. "2nd" */}
       {ordinalPrefix && (
         <span className="shrink-0 text-amber-400 text-xl font-bold tracking-wider w-10">

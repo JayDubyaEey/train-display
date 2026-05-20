@@ -65,18 +65,13 @@ export function SecondaryTrains({ trains, now }: SecondaryTrainsProps) {
         key={`out-${activeIndex}`}
         className={phase === "out" ? "animate-slide-out-up absolute inset-0" : "absolute inset-0"}
       >
-        <TrainRow train={activeTrain} variant="secondary" now={now} ordinalPrefix={activeOrdinal} />
+        <TrainRow train={activeTrain} now={now} ordinalPrefix={activeOrdinal} />
       </div>
 
       {/* Incoming row — only rendered during transition */}
       {phase === "out" && incomingTrain && (
         <div key={`in-${nextIndex}`} className="animate-slide-in-up absolute inset-0">
-          <TrainRow
-            train={incomingTrain}
-            variant="secondary"
-            now={now}
-            ordinalPrefix={incomingOrdinal}
-          />
+          <TrainRow train={incomingTrain} now={now} ordinalPrefix={incomingOrdinal} />
         </div>
       )}
     </div>
