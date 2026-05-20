@@ -7,7 +7,7 @@ export function ClockDisplay() {
   const ss = String(now.getSeconds()).padStart(2, "0")
 
   return (
-    <span className="font-mono text-amber-400 led-glow tabular-nums text-5xl tracking-[0.3em]">
+    <span className="font-mono text-amber-400 led-glow tabular-nums text-5xl tracking-normal">
       {hh}:{mm}:{ss}
     </span>
   )
