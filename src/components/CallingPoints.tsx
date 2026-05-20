@@ -43,59 +43,80 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
   const { callingPoints, loading } = useServiceDetails(train.serviceIdUrlSafe, token, true)
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLParagraphElement>(null)
-  const [animStyle, setAnimStyle] = useState<React.CSSProperties>({})
+  const [scrolling, setScrolling] = useState(false)
+  const [animDurationMs, setAnimDurationMs] = useState(0)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const destination =
     train.currentDestinations?.[0]?.locationName ?? train.destination?.[0]?.locationName ?? ""
 
-  // Build calling points text — final station is uppercased
-  const stops = callingPoints.map((cp, i) =>
-    i === callingPoints.length - 1 ? cp.locationName.toUpperCase() : cp.locationName
-  )
-
-  const text = loading
-    ? "Loading calling points..."
-    : callingPoints.length === 0
-      ? `Terminates at ${destination.toUpperCase()}`
-      : `Calling at: ${stops.join(", ")}`
-
   const prefix = showLabel ? `${train.std} ${destination} — ` : ""
-  const fullText = prefix + text
 
-  // Once text is known and refs are attached, compute scroll duration from measured widths
+  // Compute animation duration and kick off after the pause
   useEffect(() => {
     if (loading) return
     if (!containerRef.current || !textRef.current) return
 
     const containerW = containerRef.current.clientWidth
     const textW = textRef.current.scrollWidth
-    // Total travel: text starts fully off right edge, ends fully off left edge
     const totalPx = containerW + textW
     const durationMs = (totalPx / CALLING_POINTS_SPEED_PX_PER_S) * 1000
 
-    // Wait the pause period, then kick off the scroll
+    setAnimDurationMs(durationMs)
+
     pauseTimerRef.current = setTimeout(() => {
-      setAnimStyle({
-        "--marquee-duration": `${durationMs}ms`,
-        animation: `marquee ${durationMs}ms linear forwards`,
-      } as React.CSSProperties)
+      setScrolling(true)
     }, CALLING_POINTS_PAUSE_MS)
 
     return () => {
       if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
     }
-  }, [loading, fullText])
+  }, [loading])
+
+  // Build stop segments — all stops except last are plain, last is bold + uppercase
+  const stopSegments =
+    callingPoints.length === 0
+      ? null
+      : callingPoints.map((cp, i) => {
+          const isLast = i === callingPoints.length - 1
+          return (
+            <span key={cp.locationName + i}>
+              {i > 0 && ", "}
+              {isLast ? (
+                <span className="font-bold">{cp.locationName.toUpperCase()}</span>
+              ) : (
+                cp.locationName
+              )}
+            </span>
+          )
+        })
+
+  const content = loading ? (
+    "Loading calling points..."
+  ) : callingPoints.length === 0 ? (
+    <>
+      Terminates at <span className="font-bold">{destination.toUpperCase()}</span>
+    </>
+  ) : (
+    <>Calling at: {stopSegments}</>
+  )
 
   return (
-    <div ref={containerRef} className="overflow-hidden">
+    <div ref={containerRef} className="overflow-hidden h-5">
       <p
         ref={textRef}
         className="font-mono text-amber-300 text-sm tracking-wide led-glow whitespace-nowrap"
-        style={animStyle}
+        style={
+          scrolling
+            ? ({
+                animation: `marquee ${animDurationMs}ms linear forwards`,
+              } as React.CSSProperties)
+            : { visibility: "hidden" }
+        }
         onAnimationEnd={onScrollEnd}
       >
-        {fullText}
+        {prefix}
+        {content}
       </p>
     </div>
   )
