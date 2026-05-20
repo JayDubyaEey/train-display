@@ -92,7 +92,9 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
         })
 
   const carriageText =
-    train.length != null ? `. This train is formed of ${train.length} carriages` : ""
+    train.length != null && train.length > 0
+      ? `. This train is formed of ${train.length} carriages`
+      : ""
 
   const content = loading ? (
     "Loading calling points..."
