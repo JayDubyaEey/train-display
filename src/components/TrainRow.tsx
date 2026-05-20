@@ -1,27 +1,12 @@
 import type { DepartureService } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import { cn, parseHHMM } from "@/lib/utils"
 
 interface TrainRowProps {
   train: DepartureService
-  /** primary = large, first train. secondary = smaller, second train */
   variant: "primary" | "secondary"
   now: Date
-}
-
-/**
- * Parse a "HH:MM" time string into today's Date, handling midnight roll-over.
- * If the resulting time is more than 2 hours in the past it's assumed to be
- * a train departing after midnight.
- */
-function parseHHMM(hhmm: string, now: Date): Date {
-  const [hh, mm] = hhmm.split(":").map(Number)
-  const d = new Date(now)
-  d.setHours(hh, mm, 0, 0)
-  // If the time appears >2 h in the past, assume it's tomorrow
-  if (now.getTime() - d.getTime() > 2 * 60 * 60 * 1000) {
-    d.setDate(d.getDate() + 1)
-  }
-  return d
+  /** Optional ordinal label shown before the time, e.g. "2nd" or "3rd" */
+  ordinalPrefix?: string
 }
 
 interface StatusResult {
@@ -37,12 +22,9 @@ function getStatus(train: DepartureService, now: Date): StatusResult {
   if (etd === "cancelled") return { text: "Cancelled", colour: "text-red-500" }
   if (etd === "delayed") return { text: "Delayed", colour: "text-red-500" }
 
-  // Determine the actual expected departure time string (HH:MM)
   const expectedTimeStr = !etd || etd === "on time" ? train.std : (train.etd?.trim() ?? train.std)
 
-  // Validate it looks like a time
   if (!/^\d{1,2}:\d{2}$/.test(expectedTimeStr)) {
-    // Fallback — just show the raw etd value
     return { text: expectedTimeStr, colour: "text-amber-400" }
   }
 
@@ -56,14 +38,13 @@ function getStatus(train: DepartureService, now: Date): StatusResult {
   if (diffMins === 0)
     return { text: "Due", colour: isDelayed ? "text-orange-400" : "text-amber-400" }
 
-  const label = `${diffMins}m`
   return {
-    text: label,
+    text: `${diffMins}m`,
     colour: isDelayed ? "text-orange-400" : "text-amber-400",
   }
 }
 
-export function TrainRow({ train, variant, now }: TrainRowProps) {
+export function TrainRow({ train, variant, now, ordinalPrefix }: TrainRowProps) {
   const destination =
     train.currentDestinations?.[0]?.locationName ??
     train.destination?.[0]?.locationName ??
@@ -78,17 +59,24 @@ export function TrainRow({ train, variant, now }: TrainRowProps) {
   return (
     <div
       className={cn(
-        "flex items-baseline gap-3 font-mono led-glow",
-        isPrimary ? "text-amber-400 text-xl" : "text-amber-400 text-xl"
+        "flex items-baseline gap-3 font-mono led-glow text-amber-400 text-xl",
+        !isPrimary && "opacity-80"
       )}
     >
+      {/* Ordinal prefix e.g. "2nd" */}
+      {ordinalPrefix && (
+        <span className="shrink-0 text-amber-600 text-sm font-normal tracking-wider w-7">
+          {ordinalPrefix}
+        </span>
+      )}
+
       {/* Scheduled time */}
       <span className="tabular-nums shrink-0 tracking-widest font-bold">{train.std}</span>
 
       {/* Destination */}
       <span className="flex-1 truncate tracking-wider font-bold">
         {destination}
-        {via && <span className={cn("font-normal ml-2 text-base")}>{via}</span>}
+        {via && <span className="font-normal ml-2 text-base">{via}</span>}
       </span>
 
       {/* Status */}

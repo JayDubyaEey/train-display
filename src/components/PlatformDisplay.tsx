@@ -2,9 +2,11 @@ import { Settings, RefreshCw } from "lucide-react"
 import { ClockDisplay } from "./ClockDisplay"
 import { TrainRow } from "./TrainRow"
 import { CallingPoints } from "./CallingPoints"
+import { SecondaryTrains } from "./SecondaryTrains"
 import type { DisplayConfig } from "@/lib/types"
 import { useDepartures } from "@/hooks/useDepartures"
 import { useTime } from "@/hooks/useTime"
+import { hasDeparted } from "@/lib/utils"
 
 interface PlatformDisplayProps {
   config: DisplayConfig
@@ -13,15 +15,22 @@ interface PlatformDisplayProps {
 
 export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps) {
   const now = useTime()
-  const { boardInfo, trains, loading, error, refetch } = useDepartures(
-    config.stationCrs,
-    config.token,
-    config.platform,
-    true
-  )
+  const {
+    boardInfo,
+    trains: rawTrains,
+    loading,
+    error,
+    refetch,
+  } = useDepartures(config.stationCrs, config.token, config.platform, true)
+
+  // Remove any trains that have already departed
+  const trains = rawTrains.filter((t) => !hasDeparted(t, now))
 
   const stationLabel = boardInfo?.locationName ?? config.stationName
   const platformLabel = config.platform ? `Platform ${config.platform}` : "All Platforms"
+
+  const primaryTrain = trains[0]
+  const secondaryTrains = trains.slice(1)
 
   return (
     <div className="min-h-screen bg-black flex flex-col justify-center items-center p-4">
@@ -70,19 +79,19 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
           )}
 
           {/* First train + calling points */}
-          {trains[0] && (
+          {primaryTrain && (
             <div>
-              <TrainRow train={trains[0]} variant="primary" now={now} />
+              <TrainRow train={primaryTrain} variant="primary" now={now} />
               <div className="mt-1.5">
-                <CallingPoints trains={[trains[0]]} token={config.token} />
+                <CallingPoints trains={[primaryTrain]} token={config.token} />
               </div>
             </div>
           )}
 
-          {/* Second train */}
-          {trains[1] && (
+          {/* Secondary trains — cycles between 2nd and 3rd with fade */}
+          {secondaryTrains.length > 0 && (
             <div className="pt-1">
-              <TrainRow train={trains[1]} variant="secondary" now={now} />
+              <SecondaryTrains trains={secondaryTrains} now={now} />
             </div>
           )}
         </div>
