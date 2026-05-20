@@ -65,7 +65,7 @@ export function TrainRow({ train, variant, now, ordinalPrefix }: TrainRowProps) 
     >
       {/* Ordinal prefix e.g. "2nd" */}
       {ordinalPrefix && (
-        <span className="shrink-0 text-amber-700 text-xs font-normal tracking-wider w-7">
+        <span className="shrink-0 text-amber-400 text-xl font-bold tracking-wider w-10">
           {ordinalPrefix}
         </span>
       )}
