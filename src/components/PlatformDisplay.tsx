@@ -15,7 +15,7 @@ interface PlatformDisplayProps {
 
 /** Blank row that holds the same height as a TrainRow */
 function EmptyRow() {
-  return <div className="h-7 font-mono text-amber-400/20 text-xl led-glow">——</div>
+  return <div className="h-7" />
 }
 
 /** Blank row that holds the same height as the CallingPoints row */
