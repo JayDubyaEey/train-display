@@ -48,6 +48,8 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [animDurationMs, setAnimDurationMs] = useState<number | null>(null)
+  const [marqueeFrom, setMarqueeFrom] = useState<string>("0px")
+  const [marqueeTo, setMarqueeTo] = useState<string>("0px")
 
   const destination =
     train.currentDestinations?.[0]?.locationName ?? train.destination?.[0]?.locationName ?? ""
@@ -64,6 +66,8 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
     const totalPx = containerW + textW
     const durationMs = (totalPx / CALLING_POINTS_SPEED_PX_PER_S) * 1000
 
+    setMarqueeFrom(`${containerW}px`)
+    setMarqueeTo(`-${textW}px`)
     setAnimDurationMs(durationMs)
   }, [loading])
 
@@ -107,7 +111,11 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
   // Hidden until the duration is computed (text is measured), then scroll starts
   const style: React.CSSProperties =
     animDurationMs != null
-      ? { animation: `marquee ${animDurationMs}ms linear forwards` }
+      ? {
+          animation: `marquee ${animDurationMs}ms linear forwards`,
+          "--marquee-from": marqueeFrom,
+          "--marquee-to": marqueeTo,
+        } as React.CSSProperties
       : { visibility: "hidden" }
 
   return (
