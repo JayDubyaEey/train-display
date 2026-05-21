@@ -1,4 +1,4 @@
-import { Settings, RefreshCw } from "lucide-react"
+import { Settings, RefreshCw, Maximize2, Minimize2 } from "lucide-react"
 import { ClockDisplay } from "./ClockDisplay"
 import { TrainRow } from "./TrainRow"
 import { CallingPoints } from "./CallingPoints"
@@ -7,6 +7,7 @@ import type { DisplayConfig } from "@/lib/types"
 import { useDepartures } from "@/hooks/useDepartures"
 import { useTime } from "@/hooks/useTime"
 import { hasDeparted } from "@/lib/utils"
+import { useState, useEffect } from "react"
 
 interface PlatformDisplayProps {
   config: DisplayConfig
@@ -31,6 +32,24 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
     loading,
     refetch,
   } = useDepartures(config.stationCrs, config.token, config.platform, true)
+
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener("fullscreenchange", onFullscreenChange)
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange)
+  }, [])
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   // Remove any trains that have already departed
   const trains = rawTrains.filter((t) => !hasDeparted(t, now))
@@ -62,6 +81,13 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
               className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
             >
               <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
+            >
+              {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
             <button
               onClick={onOpenSettings}
