@@ -111,17 +111,19 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
   // Hidden until the duration is computed (text is measured), then scroll starts
   const style: React.CSSProperties =
     animDurationMs != null
-      ? {
+      ? ({
           animation: `marquee ${animDurationMs}ms linear forwards`,
           "--marquee-from": marqueeFrom,
           "--marquee-to": marqueeTo,
-        } as React.CSSProperties
+        } as React.CSSProperties)
       : { visibility: "hidden" }
 
   return (
     <div ref={containerRef} className="overflow-hidden h-7 relative">
-      <div className="absolute left-0 top-0 h-full w-6 z-10 pointer-events-none"
-           style={{ background: "linear-gradient(to right, black, transparent)" }} />
+      <div
+        className="absolute left-0 top-0 h-full w-6 z-10 pointer-events-none"
+        style={{ background: "linear-gradient(to right, black, transparent)" }}
+      />
       <p
         ref={textRef}
         className="font-mono text-amber-400 text-xl tracking-wide led-glow whitespace-nowrap"
