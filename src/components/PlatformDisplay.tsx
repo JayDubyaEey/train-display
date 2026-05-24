@@ -30,6 +30,7 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
     boardInfo,
     trains: rawTrains,
     loading,
+    error,
     refetch,
   } = useDepartures(config.stationCrs, config.token, config.platform, true)
 
@@ -65,6 +66,7 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
       <div
         className="w-full max-w-3xl border border-amber-900/30 rounded-sm overflow-hidden
                    shadow-[0_0_40px_rgba(180,80,0,0.15)] bg-black"
+        style={{ transform: "scale(1.25)", transformOrigin: "center center" }}
       >
         {/* ── Header bar ── */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-amber-900/40">
@@ -99,23 +101,40 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
           </div>
         </div>
 
+        {/* ── Error banner ── */}
+        {error && (
+          <div className="px-4 py-1.5 bg-red-950/60 border-b border-red-800/50 font-mono text-red-400 text-xs">
+            API error: {error}
+          </div>
+        )}
+
         {/* ── Main board area — always 3 rows ── */}
         <div className="px-4 pt-4 pb-3 space-y-3">
-          {/* Row 1: first train */}
-          {primaryTrain ? <TrainRow train={primaryTrain} now={now} /> : <EmptyRow />}
-
-          {/* Row 2: calling points */}
-          {primaryTrain ? (
-            <CallingPoints trains={[primaryTrain]} token={config.token} />
+          {trains.length === 0 && !loading ? (
+            <div className="flex items-center justify-center h-28">
+              <span className="font-mono text-amber-400 text-4xl led-glow tracking-widest">
+                No Services
+              </span>
+            </div>
           ) : (
-            <EmptyCallingPoints />
-          )}
+            <>
+              {/* Row 1: first train */}
+              {primaryTrain ? <TrainRow train={primaryTrain} now={now} /> : <EmptyRow />}
 
-          {/* Row 3: secondary train(s) */}
-          {secondaryTrains.length > 0 ? (
-            <SecondaryTrains trains={secondaryTrains} now={now} />
-          ) : (
-            <EmptyRow />
+              {/* Row 2: calling points */}
+              {primaryTrain ? (
+                <CallingPoints trains={[primaryTrain]} token={config.token} />
+              ) : (
+                <EmptyCallingPoints />
+              )}
+
+              {/* Row 3: secondary train(s) */}
+              {secondaryTrains.length > 0 ? (
+                <SecondaryTrains trains={secondaryTrains} now={now} />
+              ) : (
+                <EmptyRow />
+              )}
+            </>
           )}
         </div>
 

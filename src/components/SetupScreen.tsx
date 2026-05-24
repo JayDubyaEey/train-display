@@ -9,6 +9,7 @@ interface SetupScreenProps {
 
 export function SetupScreen({ onSave, initial = {} }: SetupScreenProps) {
   const [token, setToken] = useState(initial.token ?? "")
+  const [tokenSaved, setTokenSaved] = useState(!!initial.token)
   const [station, setStation] = useState<CrsResult | null>(
     initial.stationCrs
       ? { stationName: initial.stationName ?? "", crsCode: initial.stationCrs }
@@ -55,15 +56,33 @@ export function SetupScreen({ onSave, initial = {} }: SetupScreenProps) {
             <label className="block text-zinc-400 font-mono text-xs uppercase tracking-wider mb-1">
               NRE Access Token
             </label>
-            <input
-              type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Your Darwin API token (GUID)"
-              className="w-full bg-zinc-800 border border-zinc-600 rounded px-3 py-2 text-amber-100
-                         placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-sm font-mono"
-              autoComplete="off"
-            />
+            {tokenSaved ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-400 text-sm font-mono tracking-widest">
+                  ••••••••••••••••
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setToken("")
+                    setTokenSaved(false)
+                  }}
+                  className="text-xs font-mono text-red-400 hover:text-red-300 border border-red-800 hover:border-red-600 rounded px-2 py-2 transition-colors whitespace-nowrap"
+                >
+                  Clear
+                </button>
+              </div>
+            ) : (
+              <input
+                type="password"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Your Darwin API token (GUID)"
+                className="w-full bg-zinc-800 border border-zinc-600 rounded px-3 py-2 text-amber-100
+                           placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-sm font-mono"
+                autoComplete="off"
+              />
+            )}
             <p className="mt-1 text-zinc-500 text-xs font-mono">
               Register free at{" "}
               <a
@@ -82,7 +101,7 @@ export function SetupScreen({ onSave, initial = {} }: SetupScreenProps) {
             <label className="block text-zinc-400 font-mono text-xs uppercase tracking-wider mb-1">
               Station
             </label>
-            {token.trim() ? (
+            {tokenSaved || token.trim() ? (
               <StationSearch token={token} value={station} onChange={setStation} />
             ) : (
               <div

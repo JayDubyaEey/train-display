@@ -71,19 +71,27 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
     setAnimDurationMs(durationMs)
   }, [loading])
 
-  // Build stop segments — all stops except last are plain, last is bold + uppercase
+  // Build stop segments — times shown as (HH:MM), falling back st → et → omitted
   const stopSegments =
     callingPoints.length === 0
       ? null
       : callingPoints.map((cp, i) => {
           const isLast = i === callingPoints.length - 1
+          const time = cp.st ?? cp.et ?? null
+          const timeLabel = time ? ` (${time})` : ""
           return (
             <span key={cp.locationName + i}>
               {i > 0 && ", "}
               {isLast ? (
-                <span className="font-bold">{cp.locationName.toUpperCase()}</span>
+                <span className="font-bold">
+                  {cp.locationName.toUpperCase()}
+                  {timeLabel}
+                </span>
               ) : (
-                cp.locationName
+                <>
+                  {cp.locationName}
+                  {timeLabel}
+                </>
               )}
             </span>
           )
@@ -98,12 +106,13 @@ function CallingPointsForTrain({ train, token, showLabel, onScrollEnd }: SingleP
     "Loading calling points..."
   ) : callingPoints.length === 0 ? (
     <>
-      Terminates at <span className="font-bold">{destination.toUpperCase()}</span>
+      A {train.operator} service. Terminates at{" "}
+      <span className="font-bold">{destination.toUpperCase()}</span>
       {carriageText}
     </>
   ) : (
     <>
-      Calling at: {stopSegments}
+      A {train.operator} service. Calling at {stopSegments}
       {carriageText}
     </>
   )

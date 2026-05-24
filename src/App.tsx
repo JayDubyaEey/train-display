@@ -5,7 +5,7 @@ import { PlatformDisplay } from "@/components/PlatformDisplay"
 import type { DisplayConfig } from "@/lib/types"
 
 export default function App() {
-  const { config, isConfigured, saveConfig, clearConfig } = useConfig()
+  const { config, isConfigured, saveConfig } = useConfig()
   const [showSettings, setShowSettings] = useState(false)
 
   if (!isConfigured || showSettings) {
@@ -24,7 +24,6 @@ export default function App() {
     <PlatformDisplay
       config={config as DisplayConfig}
       onOpenSettings={() => {
-        clearConfig()
         setShowSettings(true)
       }}
     />
