@@ -4,7 +4,7 @@ export const HUXLEY_BASE = "https://huxley2.azurewebsites.net"
 export const REFRESH_INTERVAL_MS = 30_000
 
 /** Scroll speed for calling points in pixels per second */
-export const CALLING_POINTS_SPEED_PX_PER_S = 88
+export const CALLING_POINTS_SPEED_PX_PER_S = 92.4
 
 /** Minimum pause between scroll cycles (ms) — text starts scrolling after this delay */
 export const CALLING_POINTS_PAUSE_MS = 20_000
@@ -17,5 +17,5 @@ export const STORAGE_KEYS = {
   token: "train-display:token",
   stationCrs: "train-display:station-crs",
   stationName: "train-display:station-name",
-  platform: "train-display:platform",
+  platforms: "train-display:platforms",
 } as const

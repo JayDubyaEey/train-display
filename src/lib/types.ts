@@ -84,6 +84,6 @@ export interface DisplayConfig {
   token: string
   stationCrs: string
   stationName: string
-  /** Empty string means "all platforms" */
-  platform: string
+  /** One or more platform identifiers to display; empty array means all platforms */
+  platforms: string[]
 }

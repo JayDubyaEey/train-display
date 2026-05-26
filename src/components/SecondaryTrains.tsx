@@ -23,6 +23,7 @@ export function SecondaryTrains({ trains, now }: SecondaryTrainsProps) {
   const [phase, setPhase] = useState<Phase>("idle")
   const [nextIndex, setNextIndex] = useState(1)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Reset when the list length changes
   useEffect(() => {
@@ -38,8 +39,8 @@ export function SecondaryTrains({ trains, now }: SecondaryTrainsProps) {
       setNextIndex(next)
       setPhase("out")
 
-      // After the animation completes, swap and return to idle
-      setTimeout(() => {
+      // Capture so we can cancel if the component unmounts mid-animation
+      swapTimerRef.current = setTimeout(() => {
         setActiveIndex(next)
         setPhase("idle")
       }, ANIM_MS)
@@ -47,6 +48,7 @@ export function SecondaryTrains({ trains, now }: SecondaryTrainsProps) {
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
+      if (swapTimerRef.current) clearTimeout(swapTimerRef.current)
     }
   }, [activeIndex, trains.length])
 

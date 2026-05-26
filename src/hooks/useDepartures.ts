@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { fetchDepartures } from "@/lib/api"
 import { REFRESH_INTERVAL_MS, TRAINS_SHOWN } from "@/lib/constants"
-import { useFetchWithPolling } from "./useConfig"
+import { useFetchWithPolling } from "./useFetchWithPolling"
 import type { DepartureService, DepartureBoardResponse } from "@/lib/types"
 
 export interface DeparturesResult {

@@ -23,9 +23,8 @@ export default function App() {
   return (
     <PlatformDisplay
       config={config as DisplayConfig}
-      onOpenSettings={() => {
-        setShowSettings(true)
-      }}
+      onOpenSettings={() => setShowSettings(true)}
+      onUpdatePlatforms={(platforms) => saveConfig({ ...(config as DisplayConfig), platforms })}
     />
   )
 }

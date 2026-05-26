@@ -1,40 +1,29 @@
-import { Settings, RefreshCw, Maximize2, Minimize2 } from "lucide-react"
-import { ClockDisplay } from "./ClockDisplay"
-import { TrainRow } from "./TrainRow"
-import { CallingPoints } from "./CallingPoints"
-import { SecondaryTrains } from "./SecondaryTrains"
+import { Settings, Maximize2, Minimize2, Plus, X } from "lucide-react"
+import { BoardPanel } from "./BoardPanel"
 import type { DisplayConfig } from "@/lib/types"
-import { useDepartures } from "@/hooks/useDepartures"
-import { useTime } from "@/hooks/useTime"
-import { hasDeparted } from "@/lib/utils"
+import { useAvailablePlatforms } from "@/hooks/useAvailablePlatforms"
 import { useState, useEffect } from "react"
 
 interface PlatformDisplayProps {
   config: DisplayConfig
   onOpenSettings: () => void
+  onUpdatePlatforms: (platforms: string[]) => void
 }
 
-/** Blank row that holds the same height as a TrainRow */
-function EmptyRow() {
-  return <div className="h-7" />
-}
-
-/** Blank row that holds the same height as the CallingPoints row */
-function EmptyCallingPoints() {
-  return <div className="h-7" />
-}
-
-export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps) {
-  const now = useTime()
-  const {
-    boardInfo,
-    trains: rawTrains,
-    loading,
-    error,
-    refetch,
-  } = useDepartures(config.stationCrs, config.token, config.platform, true)
-
+export function PlatformDisplay({
+  config,
+  onOpenSettings,
+  onUpdatePlatforms,
+}: PlatformDisplayProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  const stationLabel = config.stationName
+  const { platforms: availablePlatforms } = useAvailablePlatforms(
+    config.stationCrs,
+    config.token,
+    true
+  )
 
   useEffect(() => {
     function onFullscreenChange() {
@@ -52,96 +41,111 @@ export function PlatformDisplay({ config, onOpenSettings }: PlatformDisplayProps
     }
   }
 
-  // Remove any trains that have already departed
-  const trains = rawTrains.filter((t) => !hasDeparted(t, now))
-
-  const stationLabel = boardInfo?.locationName ?? config.stationName
-  const platformLabel = config.platform ? `Platform ${config.platform}` : "All Platforms"
-
-  const primaryTrain = trains[0]
-  const secondaryTrains = trains.slice(1)
+  function togglePlatform(p: string) {
+    const current = config.platforms
+    if (current.includes(p)) {
+      if (current.length === 1) return
+      onUpdatePlatforms(current.filter((x) => x !== p))
+    } else {
+      if (current.length >= 4) return
+      onUpdatePlatforms([...current, p])
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col justify-center items-center p-4">
-      <div
-        className="w-full max-w-3xl border border-amber-900/30 rounded-sm overflow-hidden
-                   shadow-[0_0_40px_rgba(180,80,0,0.15)] bg-black"
-        style={{ transform: "scale(1.25)", transformOrigin: "center center" }}
-      >
-        {/* ── Header bar ── */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-amber-900/40">
-          <div className="flex items-baseline gap-3">
-            <span className="font-mono text-amber-400 text-sm font-bold tracking-widest led-glow uppercase">
-              {stationLabel}
-            </span>
-            <span className="font-mono text-amber-600 text-xs tracking-wider">{platformLabel}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={refetch}
-              title="Refresh"
-              className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
-            >
-              <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-              className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
-            >
-              {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-            </button>
-            <button
-              onClick={onOpenSettings}
-              title="Settings"
-              className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
-            >
-              <Settings size={13} />
-            </button>
+    <div className="min-h-screen bg-black flex flex-col">
+      {/* Page header */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-amber-900/30 relative">
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-amber-400 text-sm font-bold tracking-widest led-glow uppercase">
+            {stationLabel}
+          </span>
+
+          {/* Platform pills */}
+          <div className="flex items-center gap-1 flex-wrap">
+            {config.platforms.map((p) => (
+              <span
+                key={p}
+                className="flex items-center gap-1 bg-zinc-800 border border-amber-900/50 rounded px-2 py-0.5 font-mono text-amber-400 text-xs"
+              >
+                {`Plat ${p}`}
+                <button
+                  onClick={() => togglePlatform(p)}
+                  disabled={config.platforms.length === 1}
+                  className="text-zinc-500 hover:text-amber-400 disabled:opacity-30 disabled:cursor-not-allowed ml-0.5"
+                  title="Remove"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            ))}
+            {/* Add platform button */}
+            {config.platforms.length < 4 && (
+              <button
+                onClick={() => setPickerOpen((o) => !o)}
+                className="flex items-center gap-0.5 bg-zinc-800 border border-zinc-600 hover:border-amber-600 rounded px-2 py-0.5 font-mono text-zinc-500 hover:text-amber-400 text-xs transition-colors"
+                title="Add platform"
+              >
+                <Plus size={10} /> Add
+              </button>
+            )}
           </div>
         </div>
 
-        {/* ── Error banner ── */}
-        {error && (
-          <div className="px-4 py-1.5 bg-red-950/60 border-b border-red-800/50 font-mono text-red-400 text-xs">
-            API error: {error}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
+          >
+            {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+          </button>
+          <button
+            onClick={onOpenSettings}
+            title="Settings"
+            className="text-zinc-600 hover:text-amber-400 transition-colors p-1"
+          >
+            <Settings size={13} />
+          </button>
+        </div>
+
+        {/* Platform picker dropdown */}
+        {pickerOpen && (
+          <div className="absolute top-full left-6 mt-1 z-50 bg-zinc-900 border border-amber-900/40 rounded shadow-lg p-3 flex flex-wrap gap-2 max-w-xs">
+            {availablePlatforms.map((p) => (
+              <button
+                key={p}
+                onClick={() => {
+                  togglePlatform(p)
+                  setPickerOpen(false)
+                }}
+                disabled={config.platforms.includes(p)}
+                className={`px-3 py-1 rounded font-mono text-xs font-bold tracking-wider transition-colors
+                  disabled:opacity-40 disabled:cursor-not-allowed
+                  ${
+                    config.platforms.includes(p)
+                      ? "bg-amber-500 text-black"
+                      : "bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-600"
+                  }`}
+              >
+                {p}
+              </button>
+            ))}
           </div>
         )}
+      </div>
 
-        {/* ── Main board area — always 3 rows ── */}
-        <div className="px-4 pt-4 pb-3 space-y-3">
-          {trains.length === 0 && !loading ? (
-            <div className="flex items-center justify-center h-28">
-              <span className="font-mono text-amber-400 text-4xl led-glow tracking-widest">
-                No Services
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* Row 1: first train */}
-              {primaryTrain ? <TrainRow train={primaryTrain} now={now} /> : <EmptyRow />}
-
-              {/* Row 2: calling points */}
-              {primaryTrain ? (
-                <CallingPoints trains={[primaryTrain]} token={config.token} />
-              ) : (
-                <EmptyCallingPoints />
-              )}
-
-              {/* Row 3: secondary train(s) */}
-              {secondaryTrains.length > 0 ? (
-                <SecondaryTrains trains={secondaryTrains} now={now} />
-              ) : (
-                <EmptyRow />
-              )}
-            </>
-          )}
-        </div>
-
-        {/* ── Clock ── */}
-        <div className="py-3 text-center border-t border-amber-900/20">
-          <ClockDisplay />
-        </div>
+      {/* Board stack */}
+      <div className="flex-1 flex flex-col justify-center items-center gap-16 py-10 px-4 overflow-y-auto">
+        {config.platforms.map((platform) => (
+          <div
+            key={platform}
+            className="w-full max-w-3xl"
+            style={{ transform: "scale(1.1)", transformOrigin: "top center", marginBottom: "1rem" }}
+          >
+            <BoardPanel config={config} platform={platform} stationLabel={stationLabel} />
+          </div>
+        ))}
       </div>
     </div>
   )

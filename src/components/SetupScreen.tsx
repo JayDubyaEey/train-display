@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { StationSearch } from "./StationSearch"
 import type { DisplayConfig, CrsResult } from "@/lib/types"
+import { useAvailablePlatforms } from "@/hooks/useAvailablePlatforms"
 
 interface SetupScreenProps {
   onSave: (config: DisplayConfig) => void
@@ -15,12 +16,32 @@ export function SetupScreen({ onSave, initial = {} }: SetupScreenProps) {
       ? { stationName: initial.stationName ?? "", crsCode: initial.stationCrs }
       : null
   )
-  const [platform, setPlatform] = useState(initial.platform ?? "")
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(
+    (initial.platforms ?? []).filter((p) => p !== "")
+  )
   const [error, setError] = useState<string | null>(null)
+
+  const activeToken = tokenSaved ? (initial.token ?? token) : token
+  const { platforms: availablePlatforms, loading: platformsLoading } = useAvailablePlatforms(
+    station?.crsCode ?? "",
+    activeToken,
+    !!(station && activeToken)
+  )
+
+  function togglePlatform(p: string) {
+    setSelectedPlatforms((prev) => {
+      if (prev.includes(p)) {
+        if (prev.length === 1) return prev // always keep at least 1
+        return prev.filter((x) => x !== p)
+      }
+      if (prev.length >= 4) return prev
+      return [...prev, p]
+    })
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!token.trim()) {
+    if (!token.trim() && !tokenSaved) {
       setError("Please enter your NRE access token.")
       return
     }
@@ -28,14 +49,20 @@ export function SetupScreen({ onSave, initial = {} }: SetupScreenProps) {
       setError("Please select a station.")
       return
     }
+    if (selectedPlatforms.length === 0) {
+      setError("Please select at least one platform.")
+      return
+    }
     setError(null)
     onSave({
-      token: token.trim(),
+      token: activeToken.trim(),
       stationCrs: station.crsCode,
       stationName: station.stationName,
-      platform: platform.trim(),
+      platforms: selectedPlatforms,
     })
   }
+
+  const hasStation = !!(station && activeToken)
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
@@ -102,32 +129,61 @@ export function SetupScreen({ onSave, initial = {} }: SetupScreenProps) {
               Station
             </label>
             {tokenSaved || token.trim() ? (
-              <StationSearch token={token} value={station} onChange={setStation} />
+              <StationSearch
+                token={activeToken}
+                value={station}
+                onChange={(s) => {
+                  setStation(s)
+                  // Reset platform selection — platforms are station-specific
+                  setSelectedPlatforms([])
+                }}
+              />
             ) : (
-              <div
-                className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2
-                              text-zinc-600 text-sm font-mono"
-              >
+              <div className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-600 text-sm font-mono">
                 Enter your token first
               </div>
             )}
           </div>
 
-          {/* Platform */}
+          {/* Platforms */}
           <div>
             <label className="block text-zinc-400 font-mono text-xs uppercase tracking-wider mb-1">
-              Platform{" "}
-              <span className="text-zinc-600 normal-case">(optional — leave blank for all)</span>
+              Platforms
+              <span className="text-zinc-600 normal-case ml-2">(select up to 4)</span>
             </label>
-            <input
-              type="text"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              placeholder="e.g. 1, 2A, 12"
-              className="w-full bg-zinc-800 border border-zinc-600 rounded px-3 py-2 text-amber-100
-                         placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-sm font-mono
-                         uppercase"
-            />
+            {!hasStation ? (
+              <div className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-600 text-sm font-mono">
+                Select a station first
+              </div>
+            ) : platformsLoading ? (
+              <div className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-500 text-sm font-mono">
+                Loading platforms…
+              </div>
+            ) : availablePlatforms.length === 0 ? (
+              <div className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-zinc-500 text-sm font-mono">
+                No platform data available
+              </div>
+            ) : (
+              <div className="bg-zinc-900 border border-zinc-700 rounded p-2 flex flex-wrap gap-2">
+                {availablePlatforms.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => togglePlatform(p)}
+                    disabled={!selectedPlatforms.includes(p) && selectedPlatforms.length >= 4}
+                    className={`px-3 py-1 rounded font-mono text-xs font-bold tracking-wider transition-colors
+                      disabled:opacity-40 disabled:cursor-not-allowed
+                      ${
+                        selectedPlatforms.includes(p)
+                          ? "bg-amber-500 text-black"
+                          : "bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-600"
+                      }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {error && <p className="text-red-400 font-mono text-xs">{error}</p>}

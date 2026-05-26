@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "MatrixType";
+  src: url("/fonts/MatrixtypeDisplay.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --font-mono: "MatrixType", monospace;
+}
+
 /* ── LED dot-matrix glow effect ─────────────────────────────────────────── */
 .led-glow {
   text-shadow:

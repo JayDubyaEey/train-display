@@ -14,12 +14,12 @@ interface StatusResult {
 }
 
 function getStatus(train: DepartureService, now: Date): StatusResult {
-  if (train.isCancelled) return { text: "Cancelled", colour: "text-red-500" }
+  if (train.isCancelled) return { text: "Cancelled", colour: "text-amber-400" }
 
   const etd = train.etd?.trim().toLowerCase()
 
-  if (etd === "cancelled") return { text: "Cancelled", colour: "text-red-500" }
-  if (etd === "delayed") return { text: "Delayed", colour: "text-red-500" }
+  if (etd === "cancelled") return { text: "Cancelled", colour: "text-amber-400" }
+  if (etd === "delayed") return { text: "Delayed", colour: "text-amber-400" }
 
   const expectedTimeStr = !etd || etd === "on time" ? train.std : (train.etd?.trim() ?? train.std)
 
@@ -33,14 +33,13 @@ function getStatus(train: DepartureService, now: Date): StatusResult {
 
   const isDelayed = etd !== "on time" && !!etd && etd !== train.std.toLowerCase()
 
-  if (diffMins < 0) return { text: "Departed", colour: "text-zinc-500" }
+  if (diffMins < 0) return { text: "Departed", colour: "text-amber-400" }
   if (diffMins === 0)
-    return { text: "Due", colour: isDelayed ? "text-orange-400" : "text-amber-400" }
+    return { text: isDelayed ? `Exp ${train.etd!.trim()}` : "Due", colour: "text-amber-400" }
 
-  return {
-    text: `${diffMins}m`,
-    colour: isDelayed ? "text-orange-400" : "text-amber-400",
-  }
+  if (isDelayed) return { text: `Exp ${train.etd!.trim()}`, colour: "text-amber-400" }
+
+  return { text: `${diffMins}m`, colour: "text-amber-400" }
 }
 
 export function TrainRow({ train, now, ordinalPrefix }: TrainRowProps) {

@@ -6,6 +6,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").trim()
+}
+
 /**
  * Parse a "HH:MM" time string into a Date relative to `now`,
  * handling midnight roll-over (if the time appears >2 h in the past,
